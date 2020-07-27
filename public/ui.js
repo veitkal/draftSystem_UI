@@ -8,9 +8,17 @@ let socket;
 let treadleSin1_slider;
 let treadleSin2_slider;
 let treadleNoise1_slider;
+let threadingSin1_slider;
+let threadingSin2_slider;
+let threadingNoise1_slider;
+
+let updateWarp_toggle = document.getElementById('update-warp_toggle');
+let updateWeft_toggle = document.getElementById('update-weft_toggle');
+// let updateWarp_toggle = select('#update-warp_toggle');
+// let updateWarp_state = 1;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(400, 40);
   background(0);
 
   ////socket on localhost
@@ -18,13 +26,27 @@ function setup() {
   // use 'io()' instead and it will automatically find connection
   socket = io();
 
-  //test ui
+  //WAVE ui
   treadleSin1_slider = createSlider(0.0, 10.0, 3.3, 0.1);
   treadleSin2_slider = createSlider(0.0, 100.0, 0.0, 0.1);
   treadleNoise1_slider = createSlider(0.0, 100.0, 13.3, 0.1);
+  threadingSin1_slider = createSlider(0.0, 10.0, 3.3, 0.1);
+  threadingSin2_slider = createSlider(0.0, 10.0, 3.3, 0.1);
+  threadingNoise1_slider = createSlider(0.0, 100.0, 13.3, 0.1);
 
   //UI on change ie when slider is interacted with, send it as parameter
   //
+  //updateWarp
+  updateWarp_toggle.addEventListener('change', () => {
+    let updateWarp_state = updateWarp_toggle.checked; 
+    sendParam("/updateWarp", updateWarp_state);
+  });
+  //updateWeft
+  updateWeft_toggle.addEventListener('change', () => {
+    let updateWeft_state = updateWeft_toggle.checked; 
+    sendParam("/updateWeft", updateWeft_state);
+  });
+
   // slider1
   treadleSin1_slider.input(function() {
   let treadleSin1_val = treadleSin1_slider.value();
@@ -43,12 +65,35 @@ function setup() {
   sendParam("/treadleNoise1", treadleNoise1_val); 
   });
 
+  threadingSin1_slider.input(function() {
+  let threadingSin1_val = threadingSin1_slider.value();
+  sendParam("/threadingSin1", threadingSin1_val); 
+  });
+
+  threadingSin2_slider.input(function() {
+  let threadingSin2_val = threadingSin2_slider.value();
+  sendParam("/threadingSin2", threadingSin2_val); 
+  });
+
+  threadingNoise1_slider.input(function() {
+  let threadingNoise1_val = threadingNoise1_slider.value();
+  sendParam("/threadingNoise1", threadingNoise1_val); 
+  });
+
   //set slider on input to synchronize
   socket.on('param',
     // When we receive data
     function(data) {
       let val = data.val
 
+      if(data.address === "/updateWarp") {
+        console.log(val);
+        updateWarp_toggle.checked = val;
+      }
+      if(data.address === "/updateWeft") {
+        console.log(val);
+        updateWeft_toggle.checked = val;
+      }
       if(data.address === "/treadleSin1") {
         console.log(val);
         treadleSin1_slider.value(val);
@@ -60,6 +105,18 @@ function setup() {
       if(data.address === "/treadleNoise1") {
         console.log(val);
         treadleNoise1_slider.value(val);
+      }
+      if(data.address === "/threadingSin1") {
+        console.log(val);
+        threadingSin1_slider.value(val);
+      }
+      if(data.address === "/threadingSin2") {
+        console.log(val);
+        threadingSin2_slider.value(val);
+      }
+      if(data.address === "/threadingNoise1") {
+        console.log(val);
+        threadingNoise1_slider.value(val);
       }
     }
   );
